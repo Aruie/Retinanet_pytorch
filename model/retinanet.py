@@ -3,7 +3,7 @@ from torch import nn
 import numpy as np
 
 from model.resnetfpn import ResNet50_FPN
-
+from model.anchor import Anchors
 
 #import hyperparameter import hp
 
@@ -127,8 +127,8 @@ class RetinaNet(nn.Module) :
 
 if __name__ == '__main__' :
 
-    from anchor import Anchors
-    from resnetfpn import ResNet50_FPN
+    # from anchor import Anchors
+    # from resnetfpn import ResNet50_FPN
 
     model = RetinaNet()
     criterion = FocalLoss()
