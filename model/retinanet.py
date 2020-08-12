@@ -128,7 +128,6 @@ if __name__ == '__main__' :
 
     from anchor import Anchors
     from resnetfpn import ResNet50_FPN
-    from import 
 
     model = RetinaNet()
     criterion = FocalLoss()
