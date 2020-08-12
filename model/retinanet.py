@@ -4,8 +4,8 @@ import numpy as np
 
 from model.resnetfpn import ResNet50_FPN
 from model.anchor import Anchors
+from model.losses import FocalLoss
 
-#import hyperparameter import hp
 
 class CustomConv2d(nn.Module) :
     def __init__(self, in_channel, out_channel, bias = 0, act = True) :
@@ -82,19 +82,6 @@ class ObjectClassifier(nn.Module) :
         return x
 
 
-
-
-class FocalLoss(nn.Module) :
-    def __init__(self, gamma = 2, alpha = 0.25) :
-        super().__init__()
-
-        self.gamma = gamma
-        self.alpha = alpha
-
-    def forward(self, classification, regression, anchors, annotations) :
-        batch = classification.shape[0]
-        
-        return batch
 
 
 

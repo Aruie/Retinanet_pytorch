@@ -78,7 +78,6 @@ class RepeatedBlock(nn.Module) :
             x = layer(x)
         return x
 
-
 class ResidualBlock(nn.Module) :
     def __init__(self, channel, is_start, is_first = False) :
         super(ResidualBlock, self).__init__()
