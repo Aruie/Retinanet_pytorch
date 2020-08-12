@@ -2,6 +2,8 @@ import torch
 from torch import nn
 import numpy as np
 
+from resnetfpn import ResNet50_FPN
+
 
 #import hyperparameter import hp
 
@@ -109,7 +111,6 @@ class RetinaNet(nn.Module) :
         self.anchor = Anchors()
 
     def forward(self, image, annotations = None) :
-
         # if self.training and annotations is None :
         #     raise ValueError("In training mode, annotations must be requiments")
 
