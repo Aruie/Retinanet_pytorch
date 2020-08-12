@@ -76,11 +76,11 @@ class FocalLoss(nn.Module) :
             targets[positive_indices, assigned_annotations[positive_indices, 4].long()] = 1
 
             # - α(1-pt)^γ * log(pt)
-            alpha_factor = torch.ones(targets.shape).to(self.device) * alpha
+            alpha_factor = torch.ones(targets.shape).to(self.device) * self.alpha
 
             alpha_factor = torch.where(torch.eq(targets, 1.), alpha_factor, 1. - alpha_factor)
             focal_weight = torch.where(torch.eq(targets, 1.), 1. - classification, classification)
-            focal_weight = alpha_factor * torch.pow(focal_weight, gamma)
+            focal_weight = alpha_factor * torch.pow(focal_weight, self.gamma)
 
             bce = -(targets * torch.log(classification) + (1.0 - targets) * torch.log(1.0 - classification))
 

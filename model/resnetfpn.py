@@ -68,10 +68,13 @@ class RepeatedBlock(nn.Module) :
         for i in range(self.repeat) :
             is_start = (True if i == 0 else False)
                 
-            if bottleneck == True :
-                self.blocks.append( ResidualBlock(channel, is_start, is_first ))
-            else :
-                self.blocks.append( ResidualBlockS(channel, is_start, is_first ))
+
+            # 수정필요  (ResidualBlockS구현안됨)  
+            self.blocks.append( ResidualBlock(channel, is_start, is_first ))
+            # if bottleneck == True :
+            #     self.blocks.append( ResidualBlock(channel, is_start, is_first ))
+            # else :
+            #     self.blocks.append( ResidualBlockS(channel, is_start, is_first ))
             
     def forward(self, x) :
         for layer in self.blocks :
