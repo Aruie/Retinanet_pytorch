@@ -30,7 +30,7 @@ class CocoDataset(Dataset):
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
-        self.root = root_dir
+        self.root_dir = root_dir
         self.set_name = set_name
         self.transform = transform
 
