@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import numpy as np
 
-from resnetfpn import ResNet50_FPN
+from model.resnetfpn import ResNet50_FPN
 
 
 #import hyperparameter import hp
