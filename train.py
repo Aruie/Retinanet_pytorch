@@ -60,4 +60,4 @@ def train(coco_dir, epochs = 1) :
 
 if __name__ == '__main__' :
 
-    train('./coco/')
+    train('../coco/')
