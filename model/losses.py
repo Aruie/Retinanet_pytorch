@@ -21,9 +21,9 @@ class FocalLoss(nn.Module) :
         anchor = anchors[0,:,:]
 
         anchor_widths = anchor[:,2] - anchor[:,0]
-        anchor_heigths = anchor[:,3] - anchor[:,1]
+        anchor_heights = anchor[:,3] - anchor[:,1]
         anchor_ctr_x = anchor[:,0] + 0.5 * anchor_widths
-        anchor_ctr_x = anchor[:,1] + 0.5 * anchor_heigths
+        anchor_ctr_x = anchor[:,1] + 0.5 * anchor_heights
         
         for j in range(batch):
 
