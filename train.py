@@ -37,7 +37,7 @@ def train(coco_dir, epochs = 1) :
     model = RetinaNet().to(device)
     criterion = FocalLoss().to(device)
 
-    make_dataloader(coco_dir, 'val2017')
+    dataloader_val = make_dataloader(coco_dir, 'val2017')
     # test_input = torch.randn(1, 3, 512, 512)
     # annotations = torch.randn(1, 5)
 
