@@ -15,7 +15,7 @@ def make_dataloader(coco_dir, set_name, batch_size = 2, num_workers = 2) :
     # coco_dir = '/content/coco/'
     # os.chdir('/content/Retinanet_pytorch/')
 
-    print(set_name, ' Images :', len(os.listdir(os.path.join(coco_dir, set_name))))
+    print(set_name, ' Images :', len(os.listdir(os.path.join(coco_dir,'images', set_name))))
     
     if set_name == 'val2017' :
         dataset = CocoDataset(root_dir = coco_dir, set_name = set_name, transform = transforms.Compose([Normalizer(), Resizer()]))
