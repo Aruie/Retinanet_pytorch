@@ -108,7 +108,7 @@ class RetinaNet(nn.Module) :
 
         anchors = self.anchor(image)
 
-        return regression_out, classification_out, anchors
+        return classification_out, regression_out, anchors
 
 
 
@@ -123,10 +123,10 @@ if __name__ == '__main__' :
     test_input = torch.randn(1, 3, 512, 512)
     annotations = torch.randn(1, 5)
 
-    regression, classification, anchors = model(test_input)
-    loss = criterion(regression, classification, anchors, annotations)
+    classification, regression, anchors = model(test_input)
+    loss = criterion(classification, regression, anchors, annotations)
     
 
-    print(out)
+    print(loss)
 
     

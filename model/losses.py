@@ -50,10 +50,10 @@ class FocalLoss(nn.Module) :
 
                 cls_loss = focal_weight * bce
                 classification_losses.append(cls_loss.sum())
-                regression_losses.append(torch.tensor(0).float()).to(self.device)
+                regression_losses.append(torch.tensor(0).float().to(self.device))
                 continue
             
-            # 모든 앵커와 GT Box의 IoU 계산 (anchor * class)
+            # 모든 앵커와 GT Box의 IoU 계산 (anchor * gt_box)
             IoU = calc_iou(anchors[0, :, :], bbox_annotation[:, :4]) 
 
             # 클래스별 가장 IoU가 큰 앵커 구함 (class) * 1)
@@ -71,11 +71,9 @@ class FocalLoss(nn.Module) :
             num_positive_anchors = positive_indices.sum()
 
             assigned_annotations = bbox_annotation[IoU_argmax, :]
-            print(assigned_annotations[positive_indices, 4].long().shape)
-
-
+            
             targets[positive_indices, :] = 0
-            #targets[positive_indices, assigned_annotations[positive_indices, 4].long()] = 1
+            targets[positive_indices, assigned_annotations[positive_indices, 4].long()] = 1
 
             # - α(1-pt)^γ * log(pt)
             alpha_factor = torch.ones(targets.shape).to(self.device) * self.alpha
@@ -86,7 +84,7 @@ class FocalLoss(nn.Module) :
 
             bce = -(targets * torch.log(classification) + (1.0 - targets) * torch.log(1.0 - classification))
 
-            # cls_loss = focal_weight * torch.pow(bce, gamma)
+            ## cls_loss = focal_weight * torch.pow(bce, gamma)
             cls_loss = focal_weight * bce
 
             cls_loss = torch.where(torch.ne(targets, -1.0), cls_loss, torch.zeros(cls_loss.shape).to(self.device))

@@ -28,7 +28,7 @@ def make_dataloader(coco_dir, set_name, batch_size = 2, num_workers = 2) :
     return dataloader
 
 
-def train(coco_dir, epochs = 1) :
+def train(coco_dir, epochs = 1, batch_size = 2) :
 
     # from resnetfpn import ResNet50_FPN
 
@@ -37,27 +37,34 @@ def train(coco_dir, epochs = 1) :
     model = RetinaNet().to(device)
     criterion = FocalLoss().to(device)
 
-    dataloader_val = make_dataloader(coco_dir, 'val2017')
-    # test_input = torch.randn(1, 3, 512, 512)
-    # annotations = torch.randn(1, 5)
-
+    dataloader_val = make_dataloader(coco_dir, 'val2017', batch_size = batch_size)
+    optimizer = optim.SGD(model.parameters(), lr = 0.1, weight_decay=0.0001, momentum=0.9)
+    
     for epoch in range(1, epochs + 1) :
 
+        print(f'Epoch : {epoch:10}')
+
         for step, data in enumerate(dataloader_val) : 
+
+            print(f'Step : {step+1:10}', end='')
 
             image = data['img'].to(device)
             annotation = data['annot'].to(device)
 
-            regression, classification, anchors = model(image)
-            loss = criterion(regression, classification, anchors, annotation)
+            classification, regression, anchors = model(image)
+            loss_classification, loss_regression = criterion(classification, regression, anchors, annotation)
 
+            print(f'Class : {loss_classification},  Box : {loss_regression}')
 
+            loss = loss_classification + loss_regression
 
-            print(loss.shape)
-            if step > 1 :
-                break
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
+            
+         
 
 if __name__ == '__main__' :
 
-    train('../coco/')
+    train('../Datasets/coco/', batch_size = 1)
