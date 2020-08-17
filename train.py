@@ -9,14 +9,31 @@ from model.retinanet import RetinaNet
 from model.losses import FocalLoss
 from model.dataloader import CocoDataset, Normalizer, Resizer, AspectRatioBasedSampler, collater
 
+import argparse
 
+
+def main() :
+    # Get argparser
+    args = make_args()
+
+    if args.train == True :
+        train(args.dataset, args.data_path, args.batch, args.epochs)
+    else :
+        raise ValueError('Not Support "Train = False" Yet')
+    
+
+def make_args() :
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', help = 'only "coco"', default = 'coco')
+    parser.add_argument('--data_path', help = 'Path Datasets, default = "../datasets/coco/"', default = "../datasets/coco/")
+    parser.add_argument('-t', '--train', help = 'only True', action = 'store_true')
+    parser.add_argument('--batch', help='Number of MiniBatch, Default = 2', default = 2)
+    parser.add_argument('--epochs', help='Number of Epochs, Default = 1', default = 1)
+    args = parser.parse_args()
+    return args
+    
 def make_dataloader(coco_dir, set_name, batch_size = 2, num_workers = 2) :
 
-    # coco_dir = '/content/coco/'
-    # os.chdir('/content/Retinanet_pytorch/')
-
-    print(set_name, ' Images :', len(os.listdir(os.path.join(coco_dir,'images', set_name))))
-    
     if set_name == 'val2017' :
         dataset = CocoDataset(root_dir = coco_dir, set_name = set_name, transform = transforms.Compose([Normalizer(), Resizer()]))
     else :
@@ -28,18 +45,25 @@ def make_dataloader(coco_dir, set_name, batch_size = 2, num_workers = 2) :
     return dataloader
 
 
-def train(coco_dir, epochs = 1, batch_size = 2) :
+def train(dataset, data_path, batch_size = 2, epochs = 1) :
 
-    # from resnetfpn import ResNet50_FPN
 
+    # Make Dataloader
+    if dataset == 'coco' :
+        if 'images' not in os.listdir(data_path) :
+            raise ValueError('"images" folder Not in Path')
+    
+        #dataloader_train = make_dataloader(coco_dir, 'train2017', batch_size = batch_size)    
+        dataloader_val = make_dataloader(data_path, 'val2017', batch_size = batch_size)
+        
+    # Get device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') 
 
+    # Make Model & Loss & optimizer
     model = RetinaNet().to(device)
     criterion = FocalLoss().to(device)
+    optimizer = optim.SGD(model.parameters(), lr = 0.01, weight_decay=0.0001, momentum=0.9)
 
-    dataloader_val = make_dataloader(coco_dir, 'val2017', batch_size = batch_size)
-    optimizer = optim.SGD(model.parameters(), lr = 0.1, weight_decay=0.0001, momentum=0.9)
-    
     for epoch in range(1, epochs + 1) :
 
         print(f'Epoch : {epoch:10}')
@@ -67,4 +91,4 @@ def train(coco_dir, epochs = 1, batch_size = 2) :
 
 if __name__ == '__main__' :
 
-    train('../Datasets/coco/', batch_size = 1)
+    main()
