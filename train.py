@@ -91,6 +91,4 @@ def train(dataset, data_path, batch_size = 2, epochs = 1) :
 
 if __name__ == '__main__' :
 
-    #main()
-
-    print(type(torch.tensor(0)))
+    main()
