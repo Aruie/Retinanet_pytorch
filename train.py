@@ -78,12 +78,13 @@ def train(dataset, data_path, batch_size = 2, epochs = 1) :
 
         for step, data in enumerate(dataloader_val) : 
 
+            t00 = perf_counter()
             
             image = data['img'].to(device)
             annotation = data['annot'].to(device)
 
             t0 = perf_counter()
-
+            print(f'data to device : {t0-t00}')
 
             classification, regression, anchors = model(image)
 
@@ -91,18 +92,17 @@ def train(dataset, data_path, batch_size = 2, epochs = 1) :
             print(f'model : {t1-t0}')
 
             loss_classification, loss_regression = criterion(classification, regression, anchors, annotation)
+            loss = loss_classification + loss_regression
 
             t2 = perf_counter()
             print(f'criterion : {t2-t1}')
             
-            loss = loss_classification + loss_regression
-
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
             t3 = perf_counter()
-            print(f'criterion : {t3-t2}')
+            print(f'backward : {t3-t2}\n')
 
 
             if step % 100 == 1 :
