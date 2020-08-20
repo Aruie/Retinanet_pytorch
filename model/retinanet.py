@@ -113,7 +113,6 @@ class RetinaNet(nn.Module) :
 
 
 if __name__ == '__main__' :
-
     # from anchor import Anchors
     # from resnetfpn import ResNet50_FPN
 

@@ -11,11 +11,15 @@ from model.dataloader import CocoDataset, Normalizer, Resizer, AspectRatioBasedS
 
 import argparse
 
+import os
+
+
 
 def main() :
     # Get argparser
     args = make_args()
 
+    # 
     if args.train == True :
         train(args.dataset, args.data_path, args.batch, args.epochs)
     else :
@@ -27,8 +31,8 @@ def make_args() :
     parser.add_argument('--dataset', help = 'only "coco"', default = 'coco')
     parser.add_argument('--data_path', help = 'Path Datasets, default = "../datasets/coco/"', default = "../datasets/coco/")
     parser.add_argument('-t', '--train', help = 'only True', action = 'store_true')
-    parser.add_argument('--batch', help='Number of MiniBatch, Default = 2', default = 2)
-    parser.add_argument('--epochs', help='Number of Epochs, Default = 1', default = 1)
+    parser.add_argument('--batch', type = int, help='Number of MiniBatch, Default = 2', default = 2)
+    parser.add_argument('--epochs', type = int, help='Number of Epochs, Default = 1', default = 1)
     args = parser.parse_args()
     return args
     
@@ -68,9 +72,11 @@ def train(dataset, data_path, batch_size = 2, epochs = 1) :
 
         print(f'Epoch : {epoch:10}')
 
+        losses = []
+
         for step, data in enumerate(dataloader_val) : 
 
-            print(f'Step : {step+1:10}', end='')
+            print(f'Step : {step+1:3}', end='\t')
 
             image = data['img'].to(device)
             annotation = data['annot'].to(device)
@@ -85,6 +91,8 @@ def train(dataset, data_path, batch_size = 2, epochs = 1) :
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
+            losses.append(loss.item())
 
             
          
