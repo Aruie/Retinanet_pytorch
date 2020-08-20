@@ -131,7 +131,7 @@ class FocalLoss(nn.Module) :
                 )
                 regression_losses.append(regression_loss.mean())
             else:
-                regression_losses.append(torch.tensor(0).float()).to(self.device)
+                regression_losses.append(torch.tensor(0).float().to(self.device))
 
         return torch.stack(classification_losses).mean(dim=0, keepdim=True), torch.stack(regression_losses).mean(dim=0, keepdim=True)
 
