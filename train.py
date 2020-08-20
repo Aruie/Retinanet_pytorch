@@ -76,26 +76,32 @@ def train(dataset, data_path, batch_size = 2, epochs = 1) :
 
         for step, data in enumerate(dataloader_val) : 
 
-            print(f'Step : {step+1:3}', end='\t')
-
+            
             image = data['img'].to(device)
             annotation = data['annot'].to(device)
 
             classification, regression, anchors = model(image)
             loss_classification, loss_regression = criterion(classification, regression, anchors, annotation)
 
-            print(f'Class : {loss_classification},  Box : {loss_regression}')
-
+            
             loss = loss_classification + loss_regression
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
+
+            if step % 100 == 0 :
+                print(f'\tStep : {step+1:3}', end='\t')
+                print(f'Class : {loss_classification},  Box : {loss_regression}')
+
             losses.append(loss.item())
 
-            
-         
+        print(f'Epochs {epoch:6}\t Train Loss : {sum(losses) / len(losses) : .4f}\t Val Loss : Not Yet ')
+
+    torch.save(model, f'Ep{epochs}.pkl')
+
+
 
 if __name__ == '__main__' :
 
