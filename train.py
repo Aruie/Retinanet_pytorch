@@ -69,6 +69,10 @@ def train(dataset, data_path, batch_size = 2, epochs = 1, mini = False) :
 
     # Make Model & Loss & optimizer
     model = RetinaNet(mini = mini).to(device)
+
+    print(f'Parameter Count : {sum(p.numel() for p in model.parameters() if p.requires_grad)}')
+
+
     criterion = FocalLoss().to(device)
     optimizer = optim.SGD(model.parameters(), lr = 0.01, weight_decay=0.0001, momentum=0.9)
 
@@ -120,5 +124,7 @@ def train(dataset, data_path, batch_size = 2, epochs = 1, mini = False) :
 
 
 if __name__ == '__main__' :
+
+
 
     main()
