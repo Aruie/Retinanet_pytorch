@@ -68,7 +68,7 @@ def train(dataset, data_path, batch_size = 2, epochs = 1, mini = False) :
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') 
 
     # Make Model & Loss & optimizer
-    model = RetinaNet().to(device)
+    model = RetinaNet(mini = mini).to(device)
     criterion = FocalLoss().to(device)
     optimizer = optim.SGD(model.parameters(), lr = 0.01, weight_decay=0.0001, momentum=0.9)
 
