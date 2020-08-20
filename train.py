@@ -26,7 +26,7 @@ def main() :
     #     train(args.dataset, args.data_path, args.batch, args.epochs)
     # else :
     #     raise ValueError('Not Support "Train = False" Yet')
-    train(args.dataset, args.data_path, args.batch, args.epochs)
+    train(args.dataset, args.data_path, args.batch, args.epochs, args.mini)
 
 def make_args() :
     parser = argparse.ArgumentParser()
@@ -35,6 +35,8 @@ def make_args() :
     parser.add_argument('-t', '--train', help = 'only True', action = 'store_true')
     parser.add_argument('--batch', type = int, help='Number of MiniBatch, Default = 2', default = 2)
     parser.add_argument('--epochs', type = int, help='Number of Epochs, Default = 1', default = 1)
+    
+    parser.add_argument('-m','--mini', help = 'Mini Custiom Model', action = 'store_true')
     args = parser.parse_args()
     return args
     
@@ -51,7 +53,7 @@ def make_dataloader(coco_dir, set_name, batch_size = 2, num_workers = 2) :
     return dataloader
 
 
-def train(dataset, data_path, batch_size = 2, epochs = 1) :
+def train(dataset, data_path, batch_size = 2, epochs = 1, mini = False) :
 
 
     # Make Dataloader

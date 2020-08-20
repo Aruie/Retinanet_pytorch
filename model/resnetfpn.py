@@ -10,29 +10,41 @@ from torch.functional import F
 def ResNet50_FPN(fpn_channel = 256) :
     return ResNetFPN([3,4,6,3], fpn_channel, bottlenect = True)
 
+def ResNet50_FPN_Mini(fpn_channel = 256) :
+    return ResNetFPN([3,4,6,3], fpn_channel, bottlenect = True, const_channels = True)
+
 class ResNetFPN(nn.Module) : 
-    def __init__(self, repeat_list, fpn_channel, bottlenect) :
+    def __init__(self, repeat_list, fpn_channel, bottlenect, const_channels = False) :
         super().__init__()
         
         self.conv_intro = nn.Conv2d(3, 64, (7,7), stride = 2, padding = 3)
         self.pool = nn.MaxPool2d(3, stride = 2, padding = 1 )
         self.bottleneck = bottlenect
-
-        self.block1 = RepeatedBlock(self.bottleneck, 64, repeat_list[0], True)
-        self.block2 = RepeatedBlock(self.bottleneck, 128, repeat_list[1])
-        self.block3 = RepeatedBlock(self.bottleneck, 256, repeat_list[2])
-        self.block4 = RepeatedBlock(self.bottleneck, 512, repeat_list[3])
-
-        self.conv6 = nn.Conv2d(2048, fpn_channel, (3,3), stride = 2, padding = 1)
-        self.conv7 = nn.Conv2d(fpn_channel, fpn_channel, (3,3), stride = 2, padding = 1)
-
-        self.conv5 = nn.Conv2d(2048, fpn_channel, (1,1))
-                
-        self.conv4_up = nn.Conv2d(fpn_channel, fpn_channel, (3,3), padding = 1)
-        self.conv4 = nn.Conv2d(1024, fpn_channel, (1,1))
         
+        if const_channels :
+            in_channels = [64,128,256,256]
+            out_channels = [128,256,256,256]
+        else : 
+            in_channels = [64,256,512,1024]
+                
+            if self.bottleneck : 
+                out_channels = [256,512,1024,2048]
+            else :
+                out_channels = in_channels
+
+        self.block1 = RepeatedBlock(self.bottleneck, in_channels[0], out_channels[0], repeat_list[0], is_first=True)
+        self.block2 = RepeatedBlock(self.bottleneck, in_channels[1], out_channels[1], repeat_list[1])
+        self.block3 = RepeatedBlock(self.bottleneck, in_channels[2], out_channels[2], repeat_list[2])
+        self.block4 = RepeatedBlock(self.bottleneck, in_channels[3], out_channels[3], repeat_list[3])
+
+        self.conv6 = nn.Conv2d(out_channels[3], fpn_channel, (3,3), stride = 2, padding = 1)
+        self.conv7 = nn.Conv2d(fpn_channel, fpn_channel, (3,3), stride = 2, padding = 1)
+        self.conv5 = nn.Conv2d(out_channels[3], fpn_channel, (1,1))
+        self.conv4_up = nn.Conv2d(fpn_channel, fpn_channel, (3,3), padding = 1)
+        self.conv4 = nn.Conv2d(out_channels[2], fpn_channel, (1,1))
         self.conv3_up = nn.Conv2d(fpn_channel, fpn_channel, (3,3), padding = 1)
-        self.conv3 = nn.Conv2d(512, fpn_channel, (1,1))
+        self.conv3 = nn.Conv2d(out_channels[1], fpn_channel, (1,1))
+    
 
     def  forward(self, x) :
 
@@ -55,22 +67,24 @@ class ResNetFPN(nn.Module) :
 
 # Repeat Block
 class RepeatedBlock(nn.Module) :
-    def __init__(self,  bottleneck, channel, repeat, is_first = False) :
+    def __init__(self,  bottleneck, in_channel, out_channel, repeat, is_first = False) :
         super(RepeatedBlock, self).__init__()
         
-        self.chaanel = channel
         self.is_first = is_first
         self.repeat = repeat
         self.bottleneck = bottleneck
 
+        is_identity = True if is_first == False else False
         self.blocks = nn.ModuleList()
 
-        for i in range(self.repeat) :
-            is_start = (True if i == 0 else False)
-                
+        # 첫번째 블록
+        self.blocks.append( ResidualBlock(in_channel, out_channel, is_identity = is_identity, is_start = True))
 
+        for i in range(self.repeat - 1) :
+            self.blocks.append( ResidualBlock(out_channel, out_channel))
+    
             # 수정필요  (ResidualBlockS구현안됨)  
-            self.blocks.append( ResidualBlock(channel, is_start, is_first ))
+                        
             # if bottleneck == True :
             #     self.blocks.append( ResidualBlock(channel, is_start, is_first ))
             # else :
@@ -82,43 +96,42 @@ class RepeatedBlock(nn.Module) :
         return x
 
 class ResidualBlock(nn.Module) :
-    def __init__(self, channel, is_start, is_first = False) :
+    def __init__(self, in_channel, out_channel, is_identity = False, is_start = False) :
         super(ResidualBlock, self).__init__()
         
-        self.channel = channel
+        self.is_identity = is_identity
         self.is_start = is_start
-        self.is_first = is_first
+        mid_channel = int(out_channel / 4)
 
-        if self.is_start == True : 
-            if self.is_first == True : 
-                self.conv1 = nn.Conv2d(self.channel, self.channel, (1,1))
-                self.convsc = nn.Conv2d(self.channel, self.channel * 4, (1,1))
-                self.conv2 = nn.Conv2d(self.channel, self.channel, (3,3), padding = 1)
-
-            else : 
-                self.conv1 = nn.Conv2d(self.channel*2, self.channel, (1,1))
-                self.convsc = nn.Conv2d(self.channel*2, self.channel * 4, (1,1), stride=2)
-                self.conv2 = nn.Conv2d(self.channel, self.channel, (3,3), stride=2, padding = 1)        
+        if self.is_identity : 
+            self.convsc = nn.Conv2d(in_channel, out_channel, (1,1), stride=2)
+            self.conv1 = nn.Conv2d(in_channel, mid_channel, (1,1))
+            self.conv2 = nn.Conv2d(mid_channel, mid_channel, (3,3), stride=2, padding = 1)        
             
-
-        else :
-            self.conv1 = nn.Conv2d(self.channel*4, self.channel, (1,1))
-            self.conv2 = nn.Conv2d(self.channel, self.channel, (3,3), padding = 1)       
-            
-        self.bn1 = nn.BatchNorm2d(self.channel)
+        else : 
+            if is_start == True :
+                self.convsc = nn.Conv2d(in_channel, out_channel, (1,1))
+            self.conv1 = nn.Conv2d(in_channel, mid_channel, (1,1))
+            self.conv2 = nn.Conv2d(mid_channel, mid_channel, (3,3), padding = 1)
+    
+        self.bn1 = nn.BatchNorm2d(mid_channel)
         self.act1 = nn.ReLU()
 
-        self.bn2 = nn.BatchNorm2d(self.channel)
+        self.bn2 = nn.BatchNorm2d(mid_channel)
         self.act2 = nn.ReLU()
 
-        self.conv3 = nn.Conv2d(self.channel, self.channel * 4 , (1,1))
-        self.bn3 = nn.BatchNorm2d(self.channel * 4)
+        self.conv3 = nn.Conv2d(mid_channel, out_channel, (1,1))
+        self.bn3 = nn.BatchNorm2d(out_channel)
         self.act3 = nn.ReLU()
 
+
     def forward(self, x) :
-        sc = x
-        if self.is_start == True :
-            sc = self.convsc(sc)
+        
+        if self.is_identity | self.is_start :
+            sc = self.convsc(x)
+        else :
+            sc = x
+        
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -138,12 +151,13 @@ class ResidualBlock(nn.Module) :
 
 
 if __name__ == '__main__' :
-    a = ResNet50_FPN()
-    test_in = torch.randn(1,3,512,512)
+    a = ResNet50_FPN_Mini()
+    
+    # a = ResNet50_FPN()
+    test_in = torch.randn(1,3,224,224)
     y = a(test_in)
 
     print(sum(p.numel() for p in a.parameters() if p.requires_grad))
-
 
     for i in y :
         print(i.shape)

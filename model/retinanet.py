@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import numpy as np
 
-from model.resnetfpn import ResNet50_FPN
+from model.resnetfpn import ResNet50_FPN, ResNet50_FPN_Mini
 from model.anchor import Anchors
 from model.losses import FocalLoss
 from time import perf_counter
@@ -86,10 +86,14 @@ class ObjectClassifier(nn.Module) :
 
 
 class RetinaNet(nn.Module) :
-    def __init__(self, channels = 256, num_anchor = 9, num_classes = 80) : 
+    def __init__(self, channels = 256, num_anchor = 9, num_classes = 80, mini = False) : 
         super().__init__()
 
-        self.resnetfpn = ResNet50_FPN()
+        if mini :
+            self.resnetfpn = ResNet50_FPN_Mini()
+        else :
+            self.resnetfpn = ResNet50_FPN()
+
         self.classifier = ObjectClassifier(channels = channels, num_anchor = num_anchor, 
                                             num_classes = num_classes, prior=0.01)
         self.regressor = BoxRegressor(channels = channels, num_anchor = num_anchor)
