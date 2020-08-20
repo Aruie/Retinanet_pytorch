@@ -10,7 +10,7 @@ from model.losses import FocalLoss
 from model.dataloader import CocoDataset, Normalizer, Resizer, AspectRatioBasedSampler, collater
 
 import argparse
-
+from time import perf_counter
 import os
 
 
@@ -19,12 +19,14 @@ def main() :
     # Get argparser
     args = make_args()
 
-    # 
-    if args.train == True :
-        train(args.dataset, args.data_path, args.batch, args.epochs)
-    else :
-        raise ValueError('Not Support "Train = False" Yet')
+
     
+    # 
+    # if args.train == True :
+    #     train(args.dataset, args.data_path, args.batch, args.epochs)
+    # else :
+    #     raise ValueError('Not Support "Train = False" Yet')
+    train(args.dataset, args.data_path, args.batch, args.epochs)
 
 def make_args() :
     parser = argparse.ArgumentParser()
@@ -80,9 +82,18 @@ def train(dataset, data_path, batch_size = 2, epochs = 1) :
             image = data['img'].to(device)
             annotation = data['annot'].to(device)
 
+            t0 = perf_counter()
+
+
             classification, regression, anchors = model(image)
+
+            t1 = perf_counter()
+            print(f'model : {t1-t0}')
+
             loss_classification, loss_regression = criterion(classification, regression, anchors, annotation)
 
+            t2 = perf_counter()
+            print(f'criterion : {t2-t1}')
             
             loss = loss_classification + loss_regression
 
@@ -90,8 +101,11 @@ def train(dataset, data_path, batch_size = 2, epochs = 1) :
             loss.backward()
             optimizer.step()
 
+            t3 = perf_counter()
+            print(f'criterion : {t3-t2}')
 
-            if step % 100 == 0 :
+
+            if step % 100 == 1 :
                 print(f'\tStep : {step+1:3}', end='\t')
                 print(f'Class : {loss_classification},  Box : {loss_regression}')
 

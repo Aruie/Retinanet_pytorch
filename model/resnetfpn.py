@@ -142,6 +142,9 @@ if __name__ == '__main__' :
     test_in = torch.randn(1,3,512,512)
     y = a(test_in)
 
+    print(sum(p.numel() for p in a.parameters() if p.requires_grad))
+
+
     for i in y :
         print(i.shape)
 

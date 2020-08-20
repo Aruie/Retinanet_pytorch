@@ -5,7 +5,7 @@ import numpy as np
 from model.resnetfpn import ResNet50_FPN
 from model.anchor import Anchors
 from model.losses import FocalLoss
-
+from time import perf_counter
 
 class CustomConv2d(nn.Module) :
     def __init__(self, in_channel, out_channel, bias = 0, act = True) :
@@ -101,10 +101,21 @@ class RetinaNet(nn.Module) :
         # if self.training and annotations is None :
         #     raise ValueError("In training mode, annotations must be requiments")
 
+        t0 = perf_counter()
+
         fpn_out = self.resnetfpn(image)
 
+        t1 = perf_counter()
+        print(f'fpn : {t1-t0}')
+
         regression_out = torch.cat([self.regressor(x) for x in fpn_out], dim = 1)
+
+        t2 = perf_counter()
+        print(f'fpn : {t2-t1}')
         classification_out = torch.cat([self.classifier(x) for x in fpn_out], dim = 1)
+
+        t3 = perf_counter()
+        print(f'fpn : {t3-t2}')
 
         anchors = self.anchor(image)
 
